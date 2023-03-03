@@ -1,0 +1,99 @@
+---
+- name: Prepare k8s conf dirs
+  file:
+    name: "{{ item }}"
+    state: directory
+  with_items:
+    - "/etc/kubernetes"
+    - "/etc/kubernetes/pki"
+    - "/etc/kubernetes/manifests"
+
+- name: Prepare k8s logs dirs
+  file:
+    name: "{{ K8S_LOG_DIR }}"
+    state: directory
+
+- name: Copy Cert files
+  copy:
+    src: "{{ PKI_GEN_DIR }}/kubernetes/{{ item }}"
+    dest: "/etc/kubernetes/pki/{{ item | replace(inventory_hostname, '-') | replace('--','') }}"
+    mode: "600"
+  with_items:
+    - ca.pem
+    - kube-proxy.pem
+    - kube-proxy-key.pem
+    - https-tls-{{inventory_hostname}}.pem
+    - https-tls-{{inventory_hostname}}-key.pem
+
+- name: Copy kube bin
+  copy:
+    src: "/usr/local/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "755"
+  with_items:
+    - kube-proxy
+    - kubelet
+
+- name: Copy node config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/kubernetes/{{ item }}"
+  with_items:
+    - kubelet
+    - kube-proxy
+    - kubelet.config.yaml
+    - kube-proxy.config.yaml
+    - bootstrap.kubeconfig
+    - kube-proxy.kubeconfig
+
+# https://kubernetes.io/zh/blog/2018/07/09/ipvs-based-in-cluster-load-balancing-deep-dive/
+- name: Add ipvs kernel modules
+  modprobe:
+    name: "{{ item }}"
+  with_items:
+    - ip_vs
+    - ip_vs_rr
+    - ip_vs_wrr
+    - ip_vs_sh
+    - nf_conntrack
+
+- name: Copy node service
+  template:
+    src: "{{ item }}.service.j2"
+    dest: "/etc/systemd/system/{{ item }}.service"
+  with_items:
+    - kubelet
+    - kube-proxy
+
+- name: Copy kube-lb.conf
+  template:
+    src: "kube-lb.conf.j2"
+    dest: "/etc/kubernetes/kube-lb.conf"
+  when: APISERVER_LB_IP == "127.0.0.1"
+
+- name: Copy kube-lb.yaml
+  template:
+    src: "kube-lb.yaml.j2"
+    dest: "/etc/kubernetes/manifests/kube-lb.yaml"
+  when: APISERVER_LB_IP == "127.0.0.1"
+
+- name: enable node service
+  systemd:
+    name: "{{ item }}.service"
+    enabled: true
+    state: started
+    daemon_reload: yes
+  with_items:
+    - kubelet
+    - kube-proxy
+
+- name: restarted node service
+  systemd:
+    name: "{{ item }}.service"
+    enabled: true
+    state: restarted
+    daemon_reload: yes
+  with_items:
+    - kubelet
+    - kube-proxy
+  tags: [never, restart]

@@ -1,0 +1,25 @@
+- name: Prepare Nginx logs host path
+  file:
+    name: "{{ NGINX_LOG_HOST_PATH }}"
+    state: directory
+    group: "101"
+    owner: "101"
+
+- name: Copy Logrotate config
+  copy:
+    src: ingress-nginx
+    dest: /etc/kubernetes
+
+- name: Copy re_open_ngx_log.sh
+  copy:
+    src: re_open_ngx_log.sh
+    dest: /etc/kubernetes
+    mode: 0755
+
+- name: Rotate ingress logs
+  ansible.builtin.cron:
+    name: "Rotate ingress logs"
+    user: root
+    minute: "0"
+    hour: "1"
+    job: "/sbin/logrotate -vf -s /tmp/logrotate-status  /etc/kubernetes/ingress-nginx > /tmp/logrotate.log 2>&1"

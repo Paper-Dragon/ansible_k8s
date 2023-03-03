@@ -1,0 +1,5 @@
+- hosts:
+    - ext_lb
+
+  roles:
+    - ext-lb

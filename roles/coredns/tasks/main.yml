@@ -1,0 +1,21 @@
+# https://github.com/coredns/deployment/tree/master/kubernetes
+
+- name: Prepare k8s install dirs
+  file:
+    name: "{{ YAML_GEN_DIR }}"
+    state: directory
+
+- name: Create coredns.yaml
+  shell: dos2unix deploy.sh && bash deploy.sh -i {{ DNS_SERVER_IP }} -s > coredns.yaml
+  args:
+    chdir: "{{ role_path }}/files"
+    creates: "{{ role_path }}/files/coredns.yaml"
+
+- name: Copy coredns.yaml
+  copy:
+    src: coredns.yaml
+    dest: "{{ YAML_GEN_DIR }}"
+
+- name: deploy coredns.yaml
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/coredns.yaml  "

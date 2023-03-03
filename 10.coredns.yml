@@ -1,0 +1,5 @@
+- hosts:
+    - kube_client
+  gather_facts:  false
+  roles:
+    - coredns

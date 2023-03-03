@@ -1,0 +1,4 @@
+- name: Apt Install required packages
+  apt:
+    name: psmisc,haproxy,keepalived
+    state: present

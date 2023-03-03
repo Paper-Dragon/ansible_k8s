@@ -1,0 +1,42 @@
+- name: Create Local SSL Directory
+  file:
+    name: "{{ PKI_GEN_DIR }}/metrics-server"
+    state: directory
+
+- name: Create metrics-server CA config
+  template:
+    src: ca-config.json.j2
+    dest: "{{ PKI_GEN_DIR }}/metrics-server/ca-config.json"
+  with_items:
+    - metrics-server
+
+- name: Create metrics-server-ca CA CSR
+  template:
+    src: ca-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/metrics-server/ca-csr.json"
+  with_items:
+    - metrics-server-ca
+
+- name: Create metrics-server-ca.pem
+  shell: cfssl gencert -initca ca-csr.json | cfssljson -bare metrics-server-ca -
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/metrics-server"
+    creates: "{{ PKI_GEN_DIR }}/metrics-server/metrics-server-ca.pem"
+
+- name: Create metrics-server CSR
+  template:
+    src: metrics-server-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/metrics-server/metrics-server-csr.json"
+
+- name: Create metrics-server.pem
+  shell: cfssl gencert -ca=metrics-server-ca.pem -ca-key=metrics-server-ca-key.pem -config=ca-config.json -profile=metrics-server metrics-server-csr.json | cfssljson -bare metrics-server
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/metrics-server"
+    creates: "{{ PKI_GEN_DIR }}/metrics-server/metrics-server.pem"
+
+- name: chmod 0644 pem
+  file:
+    path: "{{ item }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ PKI_GEN_DIR }}/metrics-server/*.pem"

@@ -1,0 +1,55 @@
+- name: Create Local SSL Directory
+  file:
+    name: "{{ PKI_GEN_DIR }}/etcd"
+    state: directory
+
+- name: Create Etcd CA config
+  template:
+    src: ca-config.json.j2
+    dest: "{{ PKI_GEN_DIR }}/etcd/ca-config.json"
+  with_items:
+    - etcd
+
+- name: Create Etcd CA CSR
+  template:
+    src: ca-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/etcd/ca-csr.json"
+  with_items:
+    - etcd-ca
+
+- name: Create etcd-ca.pem
+  shell: cfssl gencert -initca ca-csr.json | cfssljson -bare etcd-ca -
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/etcd"
+    creates: "{{ PKI_GEN_DIR }}/etcd/etcd-ca.pem"
+
+- name: Create etcd-server CSR
+  template:
+    src: etcd-server-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/etcd/etcd-server-csr-{{ item }}.json"
+  with_items: "{{ groups['etcd'] }}"
+
+- name: Create etcd-server.pem
+  shell: cfssl gencert -ca=etcd-ca.pem -ca-key=etcd-ca-key.pem -config=ca-config.json -profile=etcd etcd-server-csr-{{ item }}.json | cfssljson -bare etcd-server-{{ item }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/etcd"
+    creates: "{{ PKI_GEN_DIR }}/etcd/etcd-server-{{ item }}.pem"
+  with_items: "{{ groups['etcd'] }}"
+
+- name: Create etcd-client CSR
+  template:
+    src: etcd-client-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/etcd/etcd-client-csr.json"
+
+- name: Create etcd-client.pem
+  shell: cfssl gencert -ca=etcd-ca.pem -ca-key=etcd-ca-key.pem -config=ca-config.json -profile=etcd etcd-client-csr.json | cfssljson -bare etcd-client
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/etcd"
+    creates: "{{ PKI_GEN_DIR }}/etcd/etcd-client.pem"
+
+- name: chmod 0644 pem
+  file:
+    path: "{{ item }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ PKI_GEN_DIR }}/etcd/*.pem"

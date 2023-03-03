@@ -1,0 +1,26 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - RequestReceived
+rules:
+  - level: None
+    userGroups: ["system:authenticated"]
+    nonResourceURLs:
+      - "/api*"
+      - "/version"
+
+  - level: None
+    users: ["system:kube-proxy"]
+    verbs: ["watch"]
+    resources:
+      - group: ""
+        resources: ["endpoints", "services"]
+
+  - level: None
+    verbs: ["update", "get"]
+    resources:
+      - group: "coordination.k8s.io"
+        resources: ["leases"]
+    namespaces: ["kube-system", "kube-node-lease"]
+
+  - level: Metadata

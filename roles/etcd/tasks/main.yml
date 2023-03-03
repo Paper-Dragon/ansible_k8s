@@ -1,0 +1,79 @@
+---
+- name: Add etcd user
+  ansible.builtin.user:
+    name: etcd
+    comment: "Etcd User"
+    createhome: no
+    system: yes
+    shell: /sbin/nologin
+
+- name: Prepare etcd conf dirs
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: etcd
+    group: etcd
+  with_items:
+    - /etc/etcd
+    - /etc/etcd/pki
+    - "{{ ETCD_DATA_DIR }}"
+
+- name: Copy etcd-ca.pem
+  copy:
+    src: "{{ PKI_GEN_DIR }}/etcd/etcd-ca.pem"
+    dest: "/etc/etcd/pki/etcd-ca.pem"
+    owner: etcd
+    group: etcd
+    mode: "600"
+
+- name: Copy etcd-server.pem
+  copy:
+    src: "{{ PKI_GEN_DIR }}/etcd/etcd-server-{{inventory_hostname}}.pem"
+    dest: "/etc/etcd/pki/etcd-server.pem"
+    owner: etcd
+    group: etcd
+    mode: "600"
+
+- name: Copy etcd-server-key.pem
+  copy:
+    src: "{{ PKI_GEN_DIR }}/etcd/etcd-server-{{inventory_hostname}}-key.pem"
+    dest: "/etc/etcd/pki/etcd-server-key.pem"
+    owner: etcd
+    group: etcd
+    mode: "600"
+
+- name: Copy etcd bin
+  copy:
+    src: "/usr/local/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "755"
+  with_items:
+    - etcd
+    - etcdctl
+
+- name: Copy etcd.service
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+
+- name: Copy etcd config
+  template:
+    src: config.j2
+    dest: "/etc/etcd/config"
+    owner: etcd
+    group: etcd
+
+- name: enable etcd.service
+  systemd:
+    name: etcd.service
+    enabled: true
+    daemon_reload: true
+    state: started
+
+- name: restart etcd.service
+  systemd:
+    name: etcd.service
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  tags: [never, restart]

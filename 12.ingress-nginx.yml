@@ -1,0 +1,26 @@
+- hosts:
+    - ingress_node
+  gather_facts: false
+  roles:
+    - ingress-nginx
+
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Prepare k8s install dirs
+      file:
+        name: "{{ YAML_GEN_DIR }}"
+        state: directory
+
+    - name: Create ingress-nginx.yaml
+      template:
+        src: roles/ingress-nginx/templates/deploy.yaml.j2
+        dest: "{{ YAML_GEN_DIR }}/ingress-nginx.yaml"
+
+    - name: label ingress node
+      debug:
+        msg: "  kubectl label nodes [ingress-node] node.kubernetes.io/role=ingress  "
+
+    - name: deploy ingress-nginx
+      debug:
+        msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/ingress-nginx.yaml  "

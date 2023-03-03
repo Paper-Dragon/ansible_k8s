@@ -1,0 +1,4 @@
+- name: Yum Install required packages
+  yum:
+    name: psmisc,haproxy,keepalived
+    state: present

@@ -1,0 +1,9 @@
+- name: apt install required tools
+  apt:
+    name: chrony,wget,ipvsadm,net-tools,conntrack,socat,nfs-common,ipset
+    update_cache: true
+    state: present
+
+- name: Disable firewall with UFW
+  ufw:
+    state: disabled

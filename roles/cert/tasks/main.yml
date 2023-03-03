@@ -1,0 +1,26 @@
+---
+- name: Install cfssl
+  copy:
+    src: "/usr/local/bin/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    mode: "755"
+  with_items:
+    - cfssl
+    - cfssljson
+    - cfssl-certinfo
+  tags: ["cfssl"]
+
+- include: etcd.yml
+  tags: ["etcd"]
+
+- include: control-plane.yml
+  tags: ["control-plane"]
+
+- include: node.yml
+  tags: ["node"]
+
+- include: admin.yml
+  tags: ["admin"]
+
+- include: metrics-server.yml
+  tags: ["metrics-server"]

@@ -1,0 +1,14 @@
+KUBELET_OPTS="--logtostderr=false \
+--v={{ DEFAULT_LOG_LEVEL }} \
+--log-dir={{ K8S_LOG_DIR }} \
+--root-dir={{ KUBELET_ROOT_DIR }} \
+--config=/etc/kubernetes/kubelet.config.yaml \
+--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+--bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+--container-runtime=remote \
+--container-runtime-endpoint=unix:///run/containerd/containerd.sock \
+--tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 \
+{% if inventory_hostname in groups['kube_master'] %}
+--node-labels=node.kubernetes.io/role=master \
+{% endif %}
+--pod-infra-container-image={{ POD_INFRA_CONTAINER_IMAGE }}"

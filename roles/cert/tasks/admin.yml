@@ -1,0 +1,21 @@
+- name: Create admin CSR
+  template:
+    src: csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/{{ item.file }}"
+  with_items:
+    - { cn: "admin", group: "system:masters", file: "admin-csr.json" }
+
+- name: Create admin.pem
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes {{ item.file }} | cfssljson -bare {{ item.cn }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/{{ item.cn }}.pem"
+  with_items:
+    - { file: "admin-csr.json", cn: "admin" }
+
+- name: chmod 0644 pem
+  file:
+    path: "{{ item }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ PKI_GEN_DIR }}/kubernetes/*.pem"

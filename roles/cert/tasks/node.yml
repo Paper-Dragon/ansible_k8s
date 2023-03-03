@@ -1,0 +1,39 @@
+- name: gather facts on kube_node hosts
+  setup:
+    gather_subset: min
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['kube_node'] }}"
+
+- name: Create https-tls CSR
+  template:
+    src: https-tls-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/https-tls-csr-{{ item }}.json"
+  with_items: "{{ groups['kube_node'] }}"
+
+- name: Create https-tls.pem
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes https-tls-csr-{{ item }}.json | cfssljson -bare https-tls-{{ item }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/https-tls-{{ item }}.pem"
+  with_items: "{{ groups['kube_node'] }}"
+
+- name: Create kube-proxy CSR
+  template:
+    src: csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/{{ item.file }}"
+  with_items:
+    - { cn: "system:kube-proxy", file: "kube-proxy-csr.json" }
+
+- name: Create kube-proxy.pem
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kube-proxy-csr.json | cfssljson -bare kube-proxy
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/kube-proxy.pem"
+
+- name: chmod 0644 pem
+  file:
+    path: "{{ item }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ PKI_GEN_DIR }}/kubernetes/*.pem"

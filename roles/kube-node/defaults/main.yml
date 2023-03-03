@@ -1,0 +1,2 @@
+# Service proxy mode of kube-proxy: 'iptables' or 'ipvs'
+PROXY_MODE: "ipvs"

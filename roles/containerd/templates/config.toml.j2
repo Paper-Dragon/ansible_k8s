@@ -1,0 +1,24 @@
+# https://github.com/containerd/containerd/blob/main/docs/cri/config.md
+version = 2
+root = "{{ CONTAINERD_ROOT_DIR }}"
+state = "/run/containerd"
+
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+    sandbox_image = "{{ POD_INFRA_CONTAINER_IMAGE }}"
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+    runtime_type = "io.containerd.runc.v2"
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    BinaryName = ""
+    CriuImagePath = ""
+    CriuPath = ""
+    CriuWorkPath = ""
+    IoGid = 0
+    IoUid = 0
+    NoNewKeyring = false
+    NoPivotRoot = false
+    Root = ""
+    ShimCgroup = ""
+    SystemdCgroup = true
+  [plugins."io.containerd.grpc.v1.cri".registry]
+    config_path = "/etc/containerd/certs.d"

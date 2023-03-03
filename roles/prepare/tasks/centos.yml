@@ -1,0 +1,23 @@
+- name: yum install required tools
+  yum:
+    name: chrony,wget,ipvsadm,net-tools,conntrack-tools,socat,nfs-utils,ipset
+    state: present
+
+- name: stop firewalld.service
+  systemd:
+    name: firewalld.service
+    enabled: false
+    state: stopped
+
+- name: disable selinux
+  selinux:
+    state: disabled
+  register: selinux_status
+
+- name: setenforce 0
+  command: setenforce 0
+  when: selinux_status.state != "disabled"
+
+- name: selinux status
+  debug:
+    msg: "SElinux: {{ selinux_status.state }}"

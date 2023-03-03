@@ -1,0 +1,63 @@
+- name: Yum Install epel-release packages
+  yum:
+    name: epel-release
+    state: present
+  when: 'ansible_distribution in ["CentOS","RedHat"]'
+
+- name: Yum Install required packages
+  yum:
+    name: jq,dos2unix,bash-completion
+    state: present
+  when: 'ansible_distribution in ["CentOS","RedHat"]'
+
+- name: Apt Install required packages
+  apt:
+    name: jq,dos2unix,bash-completion
+    state: present
+  when: 'ansible_distribution in ["Ubuntu","Debian"]'
+
+- name: Copy kubectl
+  copy:
+    src: "/usr/local/bin/kubectl"
+    dest: /usr/bin/kubectl
+    mode: "0755"
+
+- name: Prepare k8s install dirs
+  file:
+    name: "{{ YAML_GEN_DIR }}"
+    state: directory
+
+- name: Copy clusterrolebindings.yaml
+  template:
+    src: clusterrolebindings.yaml.j2
+    dest: "{{ YAML_GEN_DIR }}/clusterrolebindings.yaml"
+
+- name: Copy admin-kubeconfig.sh
+  copy:
+    src: admin-kubeconfig.sh
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/"
+
+- debug:
+    msg: " {{ APISERVER_IP }}  {{ APISERVER_PORT }} "
+
+- name: Create admin.config
+  shell: dos2unix admin-kubeconfig.sh && bash admin-kubeconfig.sh {{ APISERVER_IP }} {{ APISERVER_PORT }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes/"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/admin.conf"
+
+- name: "admin config"
+  debug:
+    msg: "    mkdir -p $HOME/.kube && sudo cp -i {{ PKI_GEN_DIR }}/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config    "
+
+- name: kubectl auto completion
+  lineinfile:
+    path: "/etc/profile.d/kubectl.sh"
+    state: present
+    create: true
+    regexp: "kubectl completion"
+    line: "source <(kubectl completion bash)"
+
+- name: Create clusterrolebindings
+  debug:
+    msg: "  kubectl create -f {{ YAML_GEN_DIR }}/clusterrolebindings.yaml  "

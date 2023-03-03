@@ -1,0 +1,32 @@
+- name: Prepare k8s install dirs
+  file:
+    name: "{{ YAML_GEN_DIR }}"
+    state: directory
+
+- name: Create dashboard.yaml
+  template:
+    src: recommended.yaml.j2
+    dest: "{{ YAML_GEN_DIR }}/dashboard.yaml"
+
+- name: Create dashboard-admin.yaml
+  template:
+    src: dashboard-admin.yaml.j2
+    dest: "{{ YAML_GEN_DIR }}/dashboard-admin.yaml"
+
+- name: Create dashboard-ingress.yaml
+  template:
+    src: dashboard-ingress.yaml.j2
+    dest: "{{ YAML_GEN_DIR }}/dashboard-ingress.yaml"
+
+- name: deploy dashboard
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/dashboard.yaml  "
+
+- name: create dashboard admin serviceAccount
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/dashboard-admin.yaml  "
+
+
+- name: create dashboard-ingress
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/dashboard-ingress.yaml  "

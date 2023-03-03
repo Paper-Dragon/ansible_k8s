@@ -1,0 +1,28 @@
+{
+    "CN": "kube-apiserver",
+    "hosts": [
+        "127.0.0.1",
+        "{{ item }}",
+{% if APISERVER_LB_IP != '127.0.0.1' %}
+        "{{ APISERVER_LB_IP }}",
+{% endif %}
+        "{{ MASTER_CLUSTER_IP }}",
+        "kubernetes",
+        "kubernetes.default",
+        "kubernetes.default.svc",
+        "kubernetes.default.svc.cluster",
+        "kubernetes.default.svc.cluster.local"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "L": "BeiJing",
+            "ST": "BeiJing",
+            "OU": "System"
+        }
+    ]
+}

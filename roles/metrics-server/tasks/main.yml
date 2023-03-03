@@ -1,0 +1,17 @@
+- name: Prepare k8s install dirs
+  file:
+    name: "{{ YAML_GEN_DIR }}"
+    state: directory
+
+- name: Copy deploy yaml
+  template:
+    src: components.yaml.j2
+    dest: "{{ YAML_GEN_DIR }}/metrics-server.yaml"
+
+- name: create metrics-server-certs secret
+  debug:
+    msg: "  kubectl -n kube-system create secret generic metrics-server-certs --from-file={{ PKI_GEN_DIR }}/metrics-server/metrics-server-key.pem --from-file={{ PKI_GEN_DIR }}/metrics-server/metrics-server.pem  "
+
+- name: deploy metrics-server
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/metrics-server.yaml  "

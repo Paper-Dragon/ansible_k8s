@@ -1,0 +1,107 @@
+- name: Prepare k8s conf dirs
+  file:
+    name: "{{ item }}"
+    state: directory
+  with_items:
+    - /etc/kubernetes
+    - /etc/kubernetes/pki
+
+- name: Prepare k8s logs dirs
+  file:
+    name: "{{ K8S_LOG_DIR }}"
+    state: directory
+
+- name: Copy kubernetes Cert files
+  copy:
+    src: "{{ PKI_GEN_DIR }}/kubernetes/{{ item }}"
+    dest: "/etc/kubernetes/pki/{{ item | replace(inventory_hostname, '-') | replace('--','') }}"
+    mode: "600"
+  with_items:
+    - sa.key
+    - sa.pub
+    - ca.pem
+    - ca-key.pem
+    - kube-scheduler.pem
+    - kube-scheduler-key.pem
+    - kube-controller-manager.pem
+    - kube-controller-manager-key.pem
+    - apiserver-kubelet-client.pem
+    - apiserver-kubelet-client-key.pem
+    - https-tls-{{inventory_hostname}}.pem
+    - https-tls-{{inventory_hostname}}-key.pem
+    - kube-apiserver-{{inventory_hostname}}.pem
+    - kube-apiserver-{{inventory_hostname}}-key.pem
+
+- name: Copy Front Proxy Cert files
+  copy:
+    src: "{{ PKI_GEN_DIR }}/front-proxy/{{ item }}"
+    dest: "/etc/kubernetes/pki/{{ item }}"
+    mode: "600"
+  with_items:
+    - front-proxy-ca.pem
+    - front-proxy-client.pem
+    - front-proxy-client-key.pem
+
+- name: Copy Etcd Cert file
+  copy:
+    src: "{{ PKI_GEN_DIR }}/etcd/{{ item }}"
+    dest: "/etc/kubernetes/pki/{{ item }}"
+    mode: "600"
+  with_items:
+    - etcd-ca.pem
+    - etcd-client.pem
+    - etcd-client-key.pem
+
+- name: Copy kube bin
+  copy:
+    src: "/usr/local/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: "755"
+  with_items:
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+
+- name: Copy master service
+  template:
+    src: "{{ item }}.service.j2"
+    dest: "/etc/systemd/system/{{ item }}.service"
+  with_items:
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+
+- name: Copy master config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/kubernetes/{{ item }}"
+  with_items:
+    - scheduler.kubeconfig
+    - controller-manager.kubeconfig
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+    - audit-policy.yaml
+
+- name: enable master service
+  systemd:
+    name: "{{ item }}.service"
+    enabled: true
+    state: started
+    daemon_reload: yes
+  with_items:
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+
+- name: restart master service
+  systemd:
+    name: "{{ item }}.service"
+    enabled: true
+    state: restarted
+    daemon_reload: yes
+  with_items:
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+  tags: [never, restart]

@@ -1,0 +1,31 @@
+---
+# https://github.com/kubernetes/kubeadm/blob/master/docs/ha-considerations.md
+- include: centos.yml
+  when: 'ansible_distribution in ["CentOS","RedHat"]'
+
+- include: ubuntu.yml
+  when: 'ansible_distribution in ["Ubuntu","Debian"]'
+
+- name: Copy haproxy.cfg
+  template:
+    src: haproxy-{{ ansible_distribution }}.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Copy keepalived.conf
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+
+- name: enable haproxy.service
+  systemd:
+    name: haproxy.service
+    enabled: true
+    state: started
+    daemon_reload: yes
+
+- name: enable keepalived.service
+  systemd:
+    name: keepalived.service
+    enabled: true
+    state: started
+    daemon_reload: yes

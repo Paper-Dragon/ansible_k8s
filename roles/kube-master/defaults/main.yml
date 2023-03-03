@@ -1,0 +1,3 @@
+# etcd_endpoints
+TMP_NODES: "{% for h in groups['etcd'] %}https://{{ h }}:2379,{% endfor %}"
+ETCD_SERVERS: "{{ TMP_NODES.rstrip(',') }}"

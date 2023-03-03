@@ -1,0 +1,3 @@
+APISERVER_IP: "{% if APISERVER_LB_IP == '127.0.0.1' %}{{ groups['kube_master'][0] }}{% else %}{{ APISERVER_LB_IP }}{% endif %}"
+
+APISERVER_PORT: "{% if APISERVER_LB_IP == '127.0.0.1' %}{{ APISERVER_SECURE_PORT }}{% else %}{{ APISERVER_LB_PORT }}{% endif %}"

@@ -1,0 +1,64 @@
+# https://kubernetes.io/docs/setup/production-environment/container-runtimes/
+
+- name: Unarchive Containerd
+  unarchive:
+    copy: yes
+    src: "{{ CONTAINERD_PKG }}"
+    dest: "/"
+    creates: "/opt/containerd"
+
+- name: delete /etc/cni/net.d/10-containerd-net.conflist
+  file:
+    path: /etc/cni/net.d/10-containerd-net.conflist
+    state: absent
+
+- name: Copy runc
+  copy:
+    src: "/usr/local/sbin/runc"
+    dest: "/usr/local/sbin/runc"
+    mode: "755"
+  when: 'ansible_distribution in ["CentOS","RedHat"]'
+
+- name: Add kernel modules
+  modprobe:
+    name: "{{ item }}"
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: create /etc/modules-load.d/containerd.conf
+  template:
+    src: containerd.conf.j2
+    dest: /etc/modules-load.d/containerd.conf
+
+- name: k8s-sysctl
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/k8s-sysctl.conf
+    sysctl_set: yes
+  with_items:
+    - { key: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { key: "net.ipv4.ip_forward", value: "1" }
+    - { key: "vm.swappiness", value: "0" }
+
+- name: create config.toml
+  template:
+    src: config.toml.j2
+    dest: /etc/containerd/config.toml
+
+- name: start containerd.service
+  systemd:
+    daemon_reload: true
+    name: containerd.service
+    enabled: true
+    state: started
+
+- name: restart containerd.service
+  systemd:
+    daemon_reload: true
+    name: containerd.service
+    enabled: true
+    state: restarted
+  tags: [never, restart]

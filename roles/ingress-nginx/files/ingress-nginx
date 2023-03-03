@@ -1,0 +1,10 @@
+/var/log/nginx/*.log {
+    daily
+    missingok
+    notifempty
+    sharedscripts
+    rotate 7
+    postrotate
+       /etc/kubernetes/re_open_ngx_log.sh
+    endscript
+}

@@ -1,0 +1,86 @@
+[etcd]
+10.0.2.10 NODE_NAME=etcd1
+10.0.2.11 NODE_NAME=etcd2
+10.0.2.12 NODE_NAME=etcd3
+
+[kube_master]
+10.0.2.10
+
+[kube_node]
+10.0.2.10
+10.0.2.11
+10.0.2.12
+
+[ingress_node]
+10.0.2.11
+10.0.2.12
+
+[kube_client]
+localhost
+
+# [optional] loadbalance for accessing k8s from outside
+[ext_lb]
+10.0.2.12 ROLE=MASTER PRIORITY=160
+10.0.2.13 ROLE=BACKUP PRIORITY=110
+
+[etcd:vars]
+# 默认2G，建议调整到8G
+ETCD_QUOTA_BACKEND_BYTES="2147483648"
+
+[all:vars]
+CONTAINERD_PKG="/opt/pkgs/cri-containerd-cni-1.6.9-linux-amd64.tar.gz"
+
+NGINX_LOG_HOST_PATH="/var/log/nginx/"
+
+# 配置高可用时 APISERVER 使用的负载均衡器 IP
+APISERVER_LB_IP="127.0.0.1"
+
+# apiserver HTTPS 端口
+APISERVER_SECURE_PORT=6443
+
+# apiserver 负载均衡器端口,避免和 APISERVER_SECURE_PORT 冲突
+APISERVER_LB_PORT=5443
+
+K8S_LOG_DIR="/var/log/kubernetes"
+
+KUBELET_ROOT_DIR="/var/lib/kubelet"
+
+CONTAINERD_ROOT_DIR="/var/lib/containerd"
+
+# 生成CA证书文件的本地路径
+PKI_GEN_DIR="{{ inventory_dir }}/pki"
+
+YAML_GEN_DIR="{{ inventory_dir }}/yaml"
+
+# K8S 集群名称
+CLUSTER_NAME="kubernetes"
+
+# K8S 日志级别
+DEFAULT_LOG_LEVEL=1
+
+# Service IP 网段，默认 10.96.0.0/12
+SERVICE_CLUSTER_IP_RANGE="172.20.0.0/16"
+
+# SERVICE_CLUSTER_IP_RANGE 的第1个IP
+MASTER_CLUSTER_IP="172.20.0.1"
+
+# SERVICE_CLUSTER_IP_RANGE 的第10个IP
+DNS_SERVER_IP="172.20.0.10"
+
+# Calico  CIDR default 192.168.0.0/16
+# Flannel CIDR default 10.244.0.0/16
+CLUSTER_CIDR="10.244.0.0/16"
+
+# PAUSE POD 镜像地址
+POD_INFRA_CONTAINER_IMAGE="registry.cn-beijing.aliyuncs.com/kube-mirrors/pause:3.8"
+
+# https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+BOOTSTRAP_TOKEN_ID="07401b"
+
+BOOTSTRAP_TOKEN_SECRET="rany0t9iuijdk42b"
+
+# dashboard 域名
+DASHBOARD_DOMAIN="das.example.com"
+
+ansible_ssh_user = root
+ansible_ssh_pass = root

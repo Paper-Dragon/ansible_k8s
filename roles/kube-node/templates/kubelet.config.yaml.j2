@@ -1,0 +1,71 @@
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 0s
+    enabled: true
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.pem
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 0s
+    cacheUnauthorizedTTL: 0s
+cgroupDriver: systemd
+clusterDNS:
+- {{ DNS_SERVER_IP }}
+clusterDomain: cluster.local
+cpuManagerReconcilePeriod: 0s
+containerLogMaxSize: 100Mi
+containerLogMaxFiles: 5
+evictionPressureTransitionPeriod: 0s
+fileCheckFrequency: 0s
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 0s
+imageMinimumGCAge: 0s
+logging:
+  flushFrequency: 0
+  options:
+    json:
+      infoBufferSize: "0"
+  verbosity: 0
+memorySwap: {}
+nodeStatusReportFrequency: 0s
+nodeStatusUpdateFrequency: 0s
+rotateCertificates: true
+runtimeRequestTimeout: 0s
+registerWithTaints:
+{% if inventory_hostname in groups['kube_master'] %}
+  - key: "node-role.kubernetes.io/master"
+    effect: "NoSchedule"
+{% endif %}
+shutdownGracePeriod: 0s
+shutdownGracePeriodCriticalPods: 0s
+staticPodPath: /etc/kubernetes/manifests
+streamingConnectionIdleTimeout: 0s
+syncFrequency: 0s
+volumeStatsAggPeriod: 0s
+{% if ansible_distribution in ["Ubuntu","Debian"] %}
+resolvConf: /run/systemd/resolve/resolv.conf
+{% endif %}
+cgroupsPerQOS: true
+enforceNodeAllocatable:
+  - pods
+evictionHard:
+  memory.available: 10%
+  nodefs.available: 10%
+  nodefs.inodesFree: 10%
+  imagefs.available: 10%
+systemReserved:
+  cpu: 100m
+  memory: 100Mi
+  ephemeral-storage: 2Gi
+kubeReserved:
+  cpu: 100m
+  memory: 100Mi
+  ephemeral-storage: 2Gi
+tlsCertFile: /etc/kubernetes/pki/https-tls.pem
+tlsPrivateKeyFile: /etc/kubernetes/pki/https-tls-key.pem

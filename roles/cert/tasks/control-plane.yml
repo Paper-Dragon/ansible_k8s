@@ -1,0 +1,113 @@
+# https://kubernetes.io/zh/docs/setup/best-practices/certificates/
+# https://kubernetes.io/docs/tasks/administer-cluster/certificates/
+- name: Create Local SSL Directory
+  file:
+    name: "{{ PKI_GEN_DIR }}/{{ item }}"
+    state: directory
+  with_items:
+    - kubernetes
+    - front-proxy
+
+- name: Create Control-plane CA config
+  template:
+    src: ca-config.json.j2
+    dest: "{{ PKI_GEN_DIR }}/{{ item }}/ca-config.json"
+  with_items:
+    - kubernetes
+    - front-proxy
+
+- name: Create kubernetes-ca CA CSR
+  template:
+    src: ca-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/ca-csr.json"
+  with_items:
+    - kubernetes-ca
+
+- name: Create kubernetes-front-proxy-ca CA CSR
+  template:
+    src: ca-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/front-proxy/ca-csr.json"
+  with_items:
+    - kubernetes-front-proxy-ca
+
+- name: Create kubernetes ca.pem
+  shell: cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/ca.pem"
+
+- name: Create front-proxy-ca.pem
+  shell: cfssl gencert -initca ca-csr.json | cfssljson -bare front-proxy-ca
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/front-proxy"
+    creates: "{{ PKI_GEN_DIR }}/front-proxy/front-proxy-ca.pem"
+
+- name: Create front-proxy-client CSR
+  template:
+    src: csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/front-proxy/{{ item.file }}"
+  with_items:
+    - { cn: "front-proxy-client", file: "front-proxy-client-csr.json" }
+
+- name: Create front-proxy-client.pem
+  shell: cfssl gencert -ca=front-proxy-ca.pem -ca-key=front-proxy-ca-key.pem -config=ca-config.json -profile=front-proxy front-proxy-client-csr.json | cfssljson -bare front-proxy-client
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/front-proxy"
+    creates: "{{ PKI_GEN_DIR }}/front-proxy/front-proxy-client.pem"
+
+- name: Create kube-apiserver CSR
+  template:
+    src: apiserver-csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/kube-apiserver-csr-{{ item }}.json"
+  with_items: "{{ groups['kube_master'] }}"
+
+- name: Create kube-apiserver cert
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kube-apiserver-csr-{{ item }}.json | cfssljson -bare kube-apiserver-{{ item }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/kube-apiserver-{{ item }}.pem"
+  with_items: "{{ groups['kube_master'] }}"
+
+- name: Create kube-scheduler / kube-controller-manager / apiserver-kubelet-client CSR
+  template:
+    src: csr.json.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/{{ item.file }}"
+  with_items:
+    - { cn: "system:kube-scheduler", file: "kube-scheduler-csr.json" }
+    - { cn: "system:kube-controller-manager", file: "kube-controller-manager-csr.json" }
+    - { cn: "apiserver-kubelet-client", group: "system:masters", file: "apiserver-kubelet-client-csr.json" }
+
+- name: Create kube-scheduler / kube-controller-manager / apiserver-kubelet-client cert
+  shell: cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes {{ item }}-csr.json | cfssljson -bare {{ item }}
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/{{ item }}.pem"
+  with_items:
+    - kube-scheduler
+    - kube-controller-manager
+    - apiserver-kubelet-client
+
+- name: Create sa.key
+  shell: openssl ecparam -name secp521r1 -genkey -noout -out sa.key
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/sa.key"
+
+- name: Create sa.pub
+  shell: openssl ec -in sa.key -outform PEM -pubout -out sa.pub
+  args:
+    chdir: "{{ PKI_GEN_DIR }}/kubernetes"
+    creates: "{{ PKI_GEN_DIR }}/kubernetes/sa.pub"
+
+- name: chmod 0644 pem
+  file:
+    path: "{{ item }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ PKI_GEN_DIR }}/kubernetes/*.pem"
+    - "{{ PKI_GEN_DIR }}/front-proxy/*.pem"
+
+- name: chmod sa.key
+  file:
+    path: "{{ PKI_GEN_DIR }}/kubernetes/sa.key"
+    mode: 0644

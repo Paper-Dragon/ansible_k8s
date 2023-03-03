@@ -1,0 +1,14 @@
+[Unit]
+Description=Kubernetes Kubelet
+After=containerd.service
+
+[Service]
+EnvironmentFile=/etc/kubernetes/kubelet
+ExecStart=/usr/local/bin/kubelet $KUBELET_OPTS
+Restart=on-failure
+KillMode=process
+LimitNOFILE=65535
+LimitNPROC=65535
+
+[Install]
+WantedBy=multi-user.target

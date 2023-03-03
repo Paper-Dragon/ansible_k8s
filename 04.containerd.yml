@@ -1,0 +1,6 @@
+- hosts:
+    - kube_master
+    - kube_node
+
+  roles:
+    - containerd

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-lb
+  name: kube-lb
+  namespace: kube-system
+spec:
+  containers:
+  - name: kube-lb
+    image: registry.cn-beijing.aliyuncs.com/kube-mirrors/nginx:stable-alpine
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 50m
+        memory: 100Mi
+    volumeMounts:
+    - mountPath: /etc/nginx/nginx.conf
+      name: kube-lb
+      readOnly: true
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/kube-lb.conf
+      type: FileOrCreate
+    name: kube-lb

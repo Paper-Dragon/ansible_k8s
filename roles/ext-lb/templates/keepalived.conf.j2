@@ -1,0 +1,36 @@
+# https://www.keepalived.org/manpage.html
+
+global_defs {
+}
+
+vrrp_script check-haproxy {
+    script "killall -0 haproxy"
+    interval 5
+    weight -100
+}
+
+vrrp_instance kube_master {
+    state {{ ROLE }}
+    priority {{ PRIORITY }}
+    unicast_src_ip {{ inventory_hostname }}
+    unicast_peer {
+{% for h in groups['ext_lb'] %}
+{% if h != inventory_hostname %}
+        {{ h }}
+{% endif %}
+{% endfor %}
+    }
+    interface {{ ansible_default_ipv4.interface }}
+    virtual_router_id 68
+    advert_int 1
+    track_script {
+        check-haproxy
+    }
+    authentication {
+         auth_type PASS
+         auth_pass 2222
+    }
+    virtual_ipaddress {
+        {{ APISERVER_LB_IP }}/24 dev {{ ansible_default_ipv4.interface }} label {{ ansible_default_ipv4.interface }}:1
+    }
+}

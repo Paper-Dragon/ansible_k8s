@@ -1,0 +1,21 @@
+- name: Prepare k8s install dirs
+  file:
+    name: "{{ YAML_GEN_DIR }}/calico"
+    state: directory
+
+- name: Create calico yaml
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ YAML_GEN_DIR }}/calico/{{ item }}"
+  with_items:
+    - "calico.yaml"
+
+- name: deploy calico
+  debug:
+    msg: "  kubectl apply -f {{ YAML_GEN_DIR }}/calico/calico.yaml  "
+
+- name: Copy calicoctl
+  copy:
+    src: "/usr/local/bin/calicoctl"
+    dest: /usr/bin/calicoctl
+    mode: "0755"
