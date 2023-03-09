@@ -73,7 +73,7 @@ ansible-playbook -i example/hosts.multi-node 13.dashboard.yml
 
 # 网盘地址
 
-K8S二进制安装文件（如链接失效或密码不正确，可以 [微信](./微信.jpg) 联系）
+K8S二进制安装文件（如链接失效或密码不正确，可以 [微信](./微信.jpg) 联系，也欢迎微信交流）
 
-链接：https://pan.baidu.com/s/1ny3Sv0GBUn_OAuW8WQ-2RA 
-提取码：g36q
+链接：https://pan.baidu.com/s/1Mq6Wpu4-YE582jGNsF2cBQ 
+提取码：cshx
