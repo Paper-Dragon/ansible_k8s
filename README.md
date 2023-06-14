@@ -14,7 +14,7 @@
 
 ```
 sudo apt install ansible git
-git clone https://gitee.com/yxydde/ansible_k8s.git
+git clone https://github.com/yxydde/ansible_k8s.git
 ```
 
 2、解压安装包
