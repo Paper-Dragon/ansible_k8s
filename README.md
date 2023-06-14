@@ -21,8 +21,11 @@ git clone https://github.com/yxydde/ansible_k8s.git
 
 ```
 wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O cfssl
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O cfssljson
 sudo mv cfssl /usr/local/bin/
+sudo mv cfssljson /usr/local/bin/
 sudo chmod u+x /usr/local/bin/cfssl
+sudo chmod u+x /usr/local/bin/cfssljson
 
 wget https://storage.googleapis.com/kubernetes-release/release/v1.27.2/kubernetes-server-linux-amd64.tar.gz
 tar -xzf kubernetes-server-linux-amd64.tar.gz 
