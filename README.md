@@ -33,7 +33,7 @@ tar -xzf etcd-v3.5.9-linux-amd64.tar.gz
 sudo mv etcd-v3.5.9-linux-amd64/{etcd,etcdctl} /usr/local/bin/
 
 sudo mkdir /opt/pkgs/
-sudo wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-1.6.21-linux-amd64.tar.gz -O mkdir /opt/pkgs
+sudo wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-1.6.21-linux-amd64.tar.gz -O /opt/pkgs
 
 # 如果是centos 7需要单独下载 Static Linking 的 runc
 wget https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
