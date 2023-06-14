@@ -21,8 +21,11 @@ git clone https://github.com/yxydde/ansible_k8s.git
 
 ```
 wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O cfssl
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O cfssljson
 sudo mv cfssl /usr/local/bin/
+sudo mv cfssljson /usr/local/bin/
 sudo chmod u+x /usr/local/bin/cfssl
+sudo chmod u+x /usr/local/bin/cfssljson
 
 wget https://storage.googleapis.com/kubernetes-release/release/v1.27.2/kubernetes-server-linux-amd64.tar.gz
 tar -xzf kubernetes-server-linux-amd64.tar.gz
@@ -32,8 +35,8 @@ wget https://github.com/etcd-io/etcd/releases/download/v3.5.9/etcd-v3.5.9-linux-
 tar -xzf etcd-v3.5.9-linux-amd64.tar.gz
 sudo mv etcd-v3.5.9-linux-amd64/{etcd,etcdctl} /usr/local/bin/
 
-wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-cni-1.6.21-linux-amd64.tar.gz
-sudo tar -xzvf cri-containerd-cni-1.6.21-linux-amd64.tar.gz -C /
+sudo mkdir /opt/pkgs/
+wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-cni-1.6.21-linux-amd64.tar.gz -O /opt/pkgs
 
 # 如果是centos 7需要单独下载 Static Linking 的 runc
 wget https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
