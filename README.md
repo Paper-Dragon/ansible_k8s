@@ -25,20 +25,20 @@ sudo mv cfssl /usr/local/bin/
 sudo chmod u+x /usr/local/bin/cfssl
 
 wget https://storage.googleapis.com/kubernetes-release/release/v1.27.2/kubernetes-server-linux-amd64.tar.gz
-tar -xzf kubernetes-server-linux-amd64.tar.gz 
+tar -xzf kubernetes-server-linux-amd64.tar.gz
 sudo mv kubernetes/server/bin/* /usr/local/bin/
 
 wget https://github.com/etcd-io/etcd/releases/download/v3.5.9/etcd-v3.5.9-linux-amd64.tar.gz
-tar -xzf etcd-v3.5.9-linux-amd64.tar.gz 
+tar -xzf etcd-v3.5.9-linux-amd64.tar.gz
 sudo mv etcd-v3.5.9-linux-amd64/{etcd,etcdctl} /usr/local/bin/
 
-wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-1.6.21-linux-amd64.tar.gz
+wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-cni-1.6.21-linux-amd64.tar.gz
 sudo tar -xzvf cri-containerd-cni-1.6.21-linux-amd64.tar.gz -C /
 
 # 如果是centos 7需要单独下载 Static Linking 的 runc
 wget https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
 sudo mv runc.amd64 /usr/local/sbin/runc
-sudo chmod u+x /usr/local/sbin/runc 
+sudo chmod u+x /usr/local/sbin/runc
 ```
 
 3、编辑主机文件(配置 etcd master node 个角色的主机)，规划网络
@@ -87,5 +87,5 @@ ansible-playbook -i example/hosts.multi-node 13.dashboard.yml
 
 K8S二进制安装文件（如链接失效或密码不正确，可以 [微信](./微信.jpg) 联系，也欢迎微信交流）
 
-链接：https://pan.baidu.com/s/1Mq6Wpu4-YE582jGNsF2cBQ 
+链接：https://pan.baidu.com/s/1Mq6Wpu4-YE582jGNsF2cBQ
 提取码：cshx

@@ -1,6 +1,4 @@
-KUBE_APISERVER_OPTS="--logtostderr=false \
---v={{ DEFAULT_LOG_LEVEL }} \
---log-dir={{ K8S_LOG_DIR }} \
+KUBE_APISERVER_OPTS="--v={{ DEFAULT_LOG_LEVEL }} \
 --advertise-address={{ inventory_hostname }} \
 --allow-privileged=true \
 --audit-log-maxage=30 \

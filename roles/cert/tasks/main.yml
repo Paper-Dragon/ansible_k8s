@@ -7,7 +7,6 @@
   with_items:
     - cfssl
     - cfssljson
-    - cfssl-certinfo
   tags: ["cfssl"]
 
 - include: etcd.yml

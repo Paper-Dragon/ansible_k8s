@@ -321,13 +321,6 @@ subjects:
 apiVersion: v1
 data:
   allow-snippet-annotations: "true"
-  use-forwarded-headers: "true"
-  forwarded-for-header: "X-Forwarded-For"
-  log-format-escape-json: "true"
-  log-format-upstream: '{"time": "$time_iso8601", "remote_addr": "$proxy_protocol_addr", "x_forward_for": "$proxy_add_x_forwarded_for", "request_id": "$req_id",
-  "remote_user": "$remote_user", "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "vhost": "$host", "request_proto": "$server_protocol",
-  "path": "$uri", "request": "$request", "request_length": $request_length, "method": "$request_method", "referrer": "$http_referer",
-  "ua": "$http_user_agent", "upstream_addr": "$upstream_addr", "upstream_response_time": [$upstream_response_time], "upstream_status": [$upstream_status]}'
 kind: ConfigMap
 metadata:
   labels:
@@ -369,7 +362,7 @@ spec:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
     app.kubernetes.io/name: ingress-nginx
-  type: ClusterIP
+  type: NodePort
 ---
 apiVersion: v1
 kind: Service
@@ -395,7 +388,7 @@ spec:
   type: ClusterIP
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: controller
@@ -406,8 +399,6 @@ metadata:
   name: ingress-nginx-controller
   namespace: ingress-nginx
 spec:
-  updateStrategy:
-    type: OnDelete
   minReadySeconds: 0
   revisionHistoryLimit: 10
   selector:
@@ -423,11 +414,7 @@ spec:
         app.kubernetes.io/name: ingress-nginx
         app.kubernetes.io/part-of: ingress-nginx
         app.kubernetes.io/version: 1.8.0
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "10254"
     spec:
-      hostNetwork: true
       containers:
       - args:
         - /nginx-ingress-controller
@@ -438,8 +425,6 @@ spec:
         - --validating-webhook=:8443
         - --validating-webhook-certificate=/usr/local/certificates/cert
         - --validating-webhook-key=/usr/local/certificates/key
-        - --log_dir=/var/log/nginx/
-        - --logtostderr=false
         env:
         - name: POD_NAME
           valueFrom:
@@ -451,7 +436,7 @@ spec:
               fieldPath: metadata.namespace
         - name: LD_PRELOAD
           value: /usr/local/lib/libmimalloc.so
-        image: registry.cn-beijing.aliyuncs.com/kube-mirrors/ingress-nginx-controller:v1.8.0
+        image: registry.k8s.io/ingress-nginx/controller:v1.8.0@sha256:744ae2afd433a395eeb13dc03d3313facba92e96ad71d9feaafc85925493fee3
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -505,34 +490,15 @@ spec:
         - mountPath: /usr/local/certificates/
           name: webhook-cert
           readOnly: true
-        - mountPath: /etc/localtime
-          name: tz-shanghai
-          readOnly: true
-        - mountPath: /var/log/nginx
-          name: nginx-log
-      dnsPolicy: ClusterFirstWithHostNet
+      dnsPolicy: ClusterFirst
       nodeSelector:
         kubernetes.io/os: linux
-      affinity:
-         nodeAffinity:
-           requiredDuringSchedulingIgnoredDuringExecution:
-             nodeSelectorTerms:
-             - matchExpressions:
-               - key: node.kubernetes.io/role
-                 operator: In
-                 values: ["ingress"]
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 300
       volumes:
       - name: webhook-cert
         secret:
           secretName: ingress-nginx-admission
-      - name: tz-shanghai
-        hostPath:
-          path: /usr/share/zoneinfo/Asia/Shanghai
-      - name: nginx-log
-        hostPath:
-          path: {{NGINX_LOG_HOST_PATH}}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -567,7 +533,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: registry.cn-beijing.aliyuncs.com/kube-mirrors/kube-webhook-certgen:v20230407
+        image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20230407@sha256:543c40fd093964bc9ab509d3e791f9989963021f1e9e4c9c7b6700b02bfb227b
         imagePullPolicy: IfNotPresent
         name: create
         securityContext:
@@ -616,7 +582,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: registry.cn-beijing.aliyuncs.com/kube-mirrors/kube-webhook-certgen:v20230407
+        image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20230407@sha256:543c40fd093964bc9ab509d3e791f9989963021f1e9e4c9c7b6700b02bfb227b
         imagePullPolicy: IfNotPresent
         name: patch
         securityContext:

@@ -28,7 +28,7 @@ localhost
 ETCD_QUOTA_BACKEND_BYTES="2147483648"
 
 [all:vars]
-CONTAINERD_PKG="/opt/pkgs/cri-containerd-cni-1.6.9-linux-amd64.tar.gz"
+CONTAINERD_PKG="/opt/pkgs/cri-containerd-cni-1.6.21-linux-amd64.tar.gz"
 
 NGINX_LOG_HOST_PATH="/var/log/nginx/"
 
@@ -72,7 +72,7 @@ DNS_SERVER_IP="172.20.0.10"
 CLUSTER_CIDR="10.244.0.0/16"
 
 # PAUSE POD 镜像地址
-POD_INFRA_CONTAINER_IMAGE="registry.cn-beijing.aliyuncs.com/kube-mirrors/pause:3.8"
+POD_INFRA_CONTAINER_IMAGE="registry.cn-beijing.aliyuncs.com/kube-mirrors/pause:3.9"
 
 # https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
 BOOTSTRAP_TOKEN_ID="07401b"

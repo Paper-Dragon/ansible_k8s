@@ -80,6 +80,7 @@ metadata:
   labels:
     k8s-app: kube-dns
     kubernetes.io/name: "CoreDNS"
+    app.kubernetes.io/name: coredns
 spec:
   # replicas: not specified here:
   # 1. Default is 1.
@@ -91,10 +92,12 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
+      app.kubernetes.io/name: coredns
   template:
     metadata:
       labels:
         k8s-app: kube-dns
+        app.kubernetes.io/name: coredns
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
@@ -106,6 +109,14 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: k8s-app
+                operator: In
+                values: ["kube-dns"]
+            topologyKey: kubernetes.io/hostname
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -113,19 +124,9 @@ spec:
               - key: node.kubernetes.io/role
                 operator: In
                 values: ["master"]
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: k8s-app
-                    operator: In
-                    values: ["kube-dns"]
-              topologyKey: kubernetes.io/hostname
       containers:
       - name: coredns
-        image: registry.cn-beijing.aliyuncs.com/kube-mirrors/coredns:1.8.6
+        image: registry.cn-beijing.aliyuncs.com/kube-mirrors/coredns:1.9.4
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -191,9 +192,11 @@ metadata:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: "CoreDNS"
+    app.kubernetes.io/name: coredns
 spec:
   selector:
     k8s-app: kube-dns
+    app.kubernetes.io/name: coredns
   clusterIP: CLUSTER_DNS_IP
   ports:
   - name: dns

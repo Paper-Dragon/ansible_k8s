@@ -5,12 +5,14 @@
 show_help () {
 cat << USAGE
 usage: $0 [ -r REVERSE-CIDR ] [ -i DNS-IP ] [ -d CLUSTER-DOMAIN ] [ -t YAML-TEMPLATE ]
+
     -r : Define a reverse zone for the given CIDR. You may specify this option more
          than once to add multiple reverse zones. If no reverse CIDRs are defined,
          then the default is to handle all reverse zones (i.e. in-addr.arpa and ip6.arpa)
     -i : Specify the cluster DNS IP address. If not specified, the IP address of
          the existing "kube-dns" service is used, if present.
     -s : Skips the translation of kube-dns configmap to the corresponding CoreDNS Corefile configuration.
+
 USAGE
 exit 0
 }

@@ -1,6 +1,4 @@
-KUBE_SCHEDULER_OPTS="--logtostderr=false \
---v={{ DEFAULT_LOG_LEVEL }} \
---log-dir={{ K8S_LOG_DIR }} \
+KUBE_SCHEDULER_OPTS="--v={{ DEFAULT_LOG_LEVEL }} \
 --authentication-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
 --authorization-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
 --kubeconfig=/etc/kubernetes/scheduler.kubeconfig \

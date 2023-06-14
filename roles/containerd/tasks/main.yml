@@ -43,6 +43,11 @@
     - { key: "net.ipv4.ip_forward", value: "1" }
     - { key: "vm.swappiness", value: "0" }
 
+- name: mkdir /etc/containerd
+  file:
+    name: "/etc/containerd"
+    state: directory
+
 - name: create config.toml
   template:
     src: config.toml.j2

@@ -41,7 +41,7 @@ metadata:
   labels:
     app: kuard
 spec:
-  ingressClassName: contour
+  ingressClassName: nginx
   rules:
     - host: kuard.example.io
       http:

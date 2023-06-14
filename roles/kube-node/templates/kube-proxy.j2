@@ -1,4 +1,2 @@
-KUBE_PROXY_OPTS="--logtostderr=false \
---v={{ DEFAULT_LOG_LEVEL }} \
---log-dir={{ K8S_LOG_DIR }} \
+KUBE_PROXY_OPTS="--v={{ DEFAULT_LOG_LEVEL }} \
 --config=/etc/kubernetes/kube-proxy.config.yaml"
