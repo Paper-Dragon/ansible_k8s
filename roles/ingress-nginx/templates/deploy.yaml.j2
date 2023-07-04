@@ -325,9 +325,9 @@ data:
   forwarded-for-header: "X-Forwarded-For"
   log-format-escape-json: "true"
   log-format-upstream: '{"time": "$time_iso8601", "remote_addr": "$proxy_protocol_addr", "x_forward_for": "$proxy_add_x_forwarded_for", "request_id": "$req_id",
-  "remote_user": "$remote_user", "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "vhost": "$host", "request_proto": "$server_protocol",
-  "path": "$uri", "request": "$request", "request_length": $request_length, "method": "$request_method", "referrer": "$http_referer",
-  "ua": "$http_user_agent", "upstream_addr": "$upstream_addr", "upstream_response_time": [$upstream_response_time], "upstream_status": [$upstream_status]}'
+  "remote_user": "$remote_user", "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "vhost": "$host", "protocol": "$server_protocol",
+  "path": "$uri", "request_length": $request_length, "method": "$request_method", "referrer": "$http_referer", "ua": "$http_user_agent",
+  "upstream_addr": "$upstream_addr", "upstream_response_time": $upstream_response_time, "upstream_status": $upstream_status}'
 kind: ConfigMap
 metadata:
   labels:
