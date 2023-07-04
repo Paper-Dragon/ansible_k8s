@@ -20,10 +20,9 @@ git clone https://github.com/yxydde/ansible_k8s.git
 2、解压安装包
 
 ```
-wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O cfssl
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O cfssljson
-sudo mv cfssl /usr/local/bin/
-sudo mv cfssljson /usr/local/bin/
+sudo wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O /usr/local/bin/cfssl
+sudo wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O /usr/local/bin/cfssljson
+
 sudo chmod u+x /usr/local/bin/cfssl
 sudo chmod u+x /usr/local/bin/cfssljson
 
