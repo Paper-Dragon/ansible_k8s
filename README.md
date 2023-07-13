@@ -37,6 +37,10 @@ sudo mv etcd-v3.5.9-linux-amd64/{etcd,etcdctl} /usr/local/bin/
 sudo mkdir /opt/pkgs/
 wget https://github.com/containerd/containerd/releases/download/v1.6.21/cri-containerd-cni-1.6.21-linux-amd64.tar.gz -O /opt/pkgs
 
+# 如果使用 calico 需要下载 calicoctl
+wget https://github.com/projectcalico/calico/releases/download/v3.24.1/calicoctl-linux-amd64 
+sudo mv calicoctl-linux-amd64 /usr/local/bin/calicoctl
+
 # 如果是centos 7需要单独下载 Static Linking 的 runc
 wget https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
 sudo mv runc.amd64 /usr/local/sbin/runc
