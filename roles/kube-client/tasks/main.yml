@@ -33,9 +33,9 @@
     dest: "{{ YAML_GEN_DIR }}/clusterrolebindings.yaml"
 
 - name: Copy admin-kubeconfig.sh
-  copy:
-    src: admin-kubeconfig.sh
-    dest: "{{ PKI_GEN_DIR }}/kubernetes/"
+  template:
+    src: admin-kubeconfig.sh.j2
+    dest: "{{ PKI_GEN_DIR }}/kubernetes/admin-kubeconfig.sh"
 
 - debug:
     msg: " {{ APISERVER_IP }}  {{ APISERVER_PORT }} "
